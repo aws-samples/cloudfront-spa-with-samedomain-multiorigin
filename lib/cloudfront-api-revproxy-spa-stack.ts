@@ -4,8 +4,7 @@ import * as s3 from 'aws-cdk-lib/aws-s3';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as cloudfront from 'aws-cdk-lib/aws-cloudfront';
 import * as origins from 'aws-cdk-lib/aws-cloudfront-origins';
-import * as apigwv2 from '@aws-cdk/aws-apigatewayv2-alpha';
-import { HttpLambdaIntegration } from '@aws-cdk/aws-apigatewayv2-integrations-alpha';
+import * as apigw from 'aws-cdk-lib/aws-apigateway';
 
 export class CloudfrontApiRevproxySpaStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -20,10 +19,21 @@ export class CloudfrontApiRevproxySpaStack extends cdk.Stack {
 
     //Create Lambda Func
     const inlinecoode = `console.log('Loading function');
+
     exports.handler = async (event, context) => {
-        console.log('Received event:', JSON.stringify(event, null, 2));
-        console.log("blah")
-        return "whatever data 1";
+      console.log(event);
+         const responseBody = {
+            "data": "Test data"
+        };
+        const response = {
+            "statusCode": 200,
+            "headers": {
+                "my_header": "my_value"
+            },
+            "body": JSON.stringify(responseBody),
+            "isBase64Encoded": false
+        };
+        return response;
     };`
     const fn = new lambda.Function(this, 'spa-backend', {
       code: lambda.Code.fromInline(inlinecoode),
@@ -32,23 +42,19 @@ export class CloudfrontApiRevproxySpaStack extends cdk.Stack {
     });
 
     //Create API GW
-    const spaDataIntegration = new HttpLambdaIntegration('SpaDataIntegration', fn);
-    const httpApi = new apigwv2.HttpApi(this, 'HttpApi');
-    httpApi.addRoutes({
-      path: '/helloData',
-      methods: [ apigwv2.HttpMethod.ANY ],
-      integration: spaDataIntegration
+    const restApi = new apigw.LambdaRestApi(this, 'dataApi', {
+      handler: fn,
     });
 
 
     //Create CF Dist with origin and behaviours
     const s3SpaOrigin = new origins.S3Origin(sample_spa_bucket)
-    const apiUrl = cdk.Fn.select(2, cdk.Fn.split('/', httpApi.apiEndpoint))
-    const ApiSpaOrigin = new origins.HttpOrigin(apiUrl);
+    //const apiUrl = cdk.Fn.select(2, cdk.Fn.split('/', restApi.url))
+    const ApiSpaOrigin = new origins.RestApiOrigin(restApi);
     new cloudfront.Distribution(this, 'spaDist', {
       defaultBehavior: { origin:  s3SpaOrigin},
       additionalBehaviors: {
-        '/helloData': {
+        '/api': {
           origin: ApiSpaOrigin,
           viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
         },
