@@ -48,15 +48,16 @@ export class CloudfrontApiRevproxySpaStack extends cdk.Stack {
 
 
     //Create CF Dist with origin and behaviours
-    const s3SpaOrigin = new origins.S3Origin(sample_spa_bucket)
-    //const apiUrl = cdk.Fn.select(2, cdk.Fn.split('/', restApi.url))
+    const s3SpaOrigin = new origins.S3Origin(sample_spa_bucket);
     const ApiSpaOrigin = new origins.RestApiOrigin(restApi);
     new cloudfront.Distribution(this, 'spaDist', {
       defaultBehavior: { origin:  s3SpaOrigin},
       additionalBehaviors: {
-        '/api': {
+        '/api/*': {
           origin: ApiSpaOrigin,
           viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+          cachePolicy: cloudfront.CachePolicy.CACHING_DISABLED,
+          originRequestPolicy: cloudfront.OriginRequestPolicy.ALL_VIEWER
         },
       }
     });
