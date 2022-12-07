@@ -6,18 +6,20 @@ import * as cloudfront from 'aws-cdk-lib/aws-cloudfront';
 import * as origins from 'aws-cdk-lib/aws-cloudfront-origins';
 import * as apigw from 'aws-cdk-lib/aws-apigateway';
 
+/*
+The resources created in the below code are for testing only and do not have any authentication added for the origins.
+*/
+
 export class CloudfrontApiRevproxySpaStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
-    //Create S3 bucket
     const sample_spa_bucket = new s3.Bucket(this, 'sample-spa-bucket', {
       versioned: true,
       removalPolicy: cdk.RemovalPolicy.DESTROY,
       autoDeleteObjects: true
     });
 
-    //Create Lambda Func
     const inlinecoode = `console.log('Loading function');
 
     exports.handler = async (event, context) => {
@@ -41,13 +43,13 @@ export class CloudfrontApiRevproxySpaStack extends cdk.Stack {
       runtime: lambda.Runtime.NODEJS_14_X,
     });
 
-    //Create API GW
+
     const restApi = new apigw.LambdaRestApi(this, 'dataApi', {
       handler: fn,
     });
 
 
-    //Create CF Dist with origin and behaviours
+
     const s3SpaOrigin = new origins.S3Origin(sample_spa_bucket);
     const ApiSpaOrigin = new origins.RestApiOrigin(restApi);
     new cloudfront.Distribution(this, 'spaDist', {
