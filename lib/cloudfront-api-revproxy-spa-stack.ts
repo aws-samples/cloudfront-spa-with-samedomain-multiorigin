@@ -43,7 +43,7 @@ export class CloudfrontApiRevproxySpaStack extends cdk.Stack {
     const fn = new lambda.Function(this, 'spa-backend', {
       code: lambda.Code.fromInline(inlinecoode),
       handler: 'index.handler',
-      runtime: lambda.Runtime.NODEJS_14_X,
+      runtime: lambda.Runtime.NODEJS_16_X
     });
 
 
