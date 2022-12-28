@@ -17,7 +17,10 @@ export class CloudfrontApiRevproxySpaStack extends cdk.Stack {
     const sample_spa_bucket = new s3.Bucket(this, 'sample-spa-bucket', {
       versioned: true,
       removalPolicy: cdk.RemovalPolicy.DESTROY,
-      autoDeleteObjects: true
+      autoDeleteObjects: true,
+      blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
+      encryption: s3.BucketEncryption.S3_MANAGED,
+      enforceSSL: true
     });
 
     const inlinecoode = `console.log('Loading function');
