@@ -24,6 +24,7 @@
     "@aws-cdk/aws-apigatewayv2-alpha": "^2.47.0-alpha.0",
     "@aws-cdk/aws-apigatewayv2-integrations-alpha": "^2.47.0-alpha.0",
     "aws-cdk-lib": "2.47.0",
+    "cdk-nag": "^2.21.44",
     "constructs": "^10.0.0",
     "source-map-support": "^0.5.21"
   }
