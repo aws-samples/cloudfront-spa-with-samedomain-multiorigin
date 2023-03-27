@@ -5,6 +5,7 @@ import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as cloudfront from 'aws-cdk-lib/aws-cloudfront';
 import * as origins from 'aws-cdk-lib/aws-cloudfront-origins';
 import * as apigw from 'aws-cdk-lib/aws-apigateway';
+import { NagSuppressions } from 'cdk-nag';
 
 /*
 The resources created in the below code are for testing only and do not have any authentication added for the origins.
@@ -50,6 +51,41 @@ export class CloudfrontApiRevproxySpaStack extends cdk.Stack {
     const restApi = new apigw.LambdaRestApi(this, 'dataApi', {
       handler: fn,
     });
+
+    NagSuppressions.addStackSuppressions(this, [
+      {
+        id: 'AwsSolutions-APIG1',
+        reason: 'Sample resource only for demo purposes'
+      },
+      {
+        id: 'AwsSolutions-APIG2',
+        reason: 'Sample resource only for demo purposes'
+      },
+      {
+        id: 'AwsSolutions-APIG4',
+        reason: 'Sample resource only for demo purposes'
+      },
+      {
+        id: 'AwsSolutions-APIG6',
+        reason: 'Sample resource only for demo purposes'
+      },
+      {
+        id: 'AwsSolutions-APIG2',
+        reason: 'Sample resource only for demo purposes'
+      },
+      {
+        id: 'AwsSolutions-COG4',
+        reason: 'Sample resource only for demo purposes'
+      },
+      {
+        id: 'AwsSolutions-CFR3',
+        reason: 'Sample resource only for demo purposes'
+      },
+      {
+        id: 'AwsSolutions-CFR4',
+        reason: 'Sample resource only for demo purposes'
+      }
+    ]);
 
 
 
