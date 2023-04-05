@@ -12,13 +12,9 @@ export class FrontComponent implements OnInit {
 
   ngOnInit(): void {
   }
-
-  getData(): void {
-    console.log("from front");
-    this.getDataService.getData().subscribe();
-  }
+  
+  dataVar: any = "This will be replaced by data fetched through API GW origin.";
   getCfData(): void {
-    console.log("from cf front");
-    this.getDataService.getCfData().subscribe();
+    this.getDataService.getCfData().subscribe((data) => {this.dataVar = JSON.stringify(data)});
   }
 }

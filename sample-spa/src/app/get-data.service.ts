@@ -2,7 +2,6 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpErrorResponse } from '@angular/common/http';
 import { Observable, of, throwError } from 'rxjs';
 import { catchError, map, tap } from 'rxjs/operators';
-import config from '../assets/config.json';
 
 @Injectable({
   providedIn: 'root'
@@ -11,7 +10,6 @@ export class GetDataService {
 
   constructor(private http: HttpClient) { }
 
-  private dataUrl = config.apiGwUrl; 
   private dataCfUrl = '/api/prod';
 
   private httpOptions = {
@@ -20,12 +18,6 @@ export class GetDataService {
     })
   };
 
-  getData(): Observable<any> {
-    console.log("getting data");
-    return this.http.get(this.dataUrl, this.httpOptions).pipe(
-      catchError(this.handleError)
-    );
-  }
   getCfData(): Observable<any> {
     console.log("getting data");
     return this.http.get(this.dataCfUrl, this.httpOptions).pipe(
