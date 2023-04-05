@@ -23,7 +23,6 @@ Steps to deploy the package
 
 The repository includes a sample SPA that you can optionally deploy to the provisioned S3 bucket using below steps. 
 
-1. Copy the API Gateway endpoint that is output on the terminal after deployment is complete. Replace the url in the ‘config.json’ file located under ‘sample-spa/assets/’.
 1. Run the following commands to build the angular application.
 `cd sample-spa`
 `npm install && ng build`
