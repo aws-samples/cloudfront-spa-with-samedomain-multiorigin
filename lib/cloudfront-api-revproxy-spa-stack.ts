@@ -5,6 +5,8 @@ import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as cloudfront from 'aws-cdk-lib/aws-cloudfront';
 import * as origins from 'aws-cdk-lib/aws-cloudfront-origins';
 import * as apigw from 'aws-cdk-lib/aws-apigateway';
+import * as logs from 'aws-cdk-lib/aws-logs';
+import * as iam from 'aws-cdk-lib/aws-iam';
 
 
 /*
@@ -15,13 +17,25 @@ export class CloudfrontApiRevproxySpaStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
-    const sample_spa_bucket = new s3.Bucket(this, 'sample-spa-bucket', {
+    const apiLogGroup = new logs.LogGroup(this, 'ApiLogGroup');
+    const accessLogsBucket = new s3.Bucket(this, 'AccessLogsBucket', {
       versioned: true,
       removalPolicy: cdk.RemovalPolicy.DESTROY,
       autoDeleteObjects: true,
       blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
       encryption: s3.BucketEncryption.S3_MANAGED,
       enforceSSL: true
+    });
+
+    const sample_spa_bucket = new s3.Bucket(this, 'sample-spa-bucket', {
+      versioned: true,
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
+      autoDeleteObjects: true,
+      blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
+      encryption: s3.BucketEncryption.S3_MANAGED,
+      enforceSSL: true,
+      serverAccessLogsBucket: accessLogsBucket,
+      serverAccessLogsPrefix: 'logs'
     });
 
     const inlinecoode = `console.log('Loading function');
@@ -44,13 +58,21 @@ export class CloudfrontApiRevproxySpaStack extends cdk.Stack {
     const fn = new lambda.Function(this, 'spa-backend', {
       code: lambda.Code.fromInline(inlinecoode),
       handler: 'index.handler',
-      runtime: lambda.Runtime.NODEJS_16_X
+      runtime: lambda.Runtime.NODEJS_18_X
     });
 
 
     const restApi = new apigw.LambdaRestApi(this, 'dataApi', {
       handler: fn,
-    });
+      cloudWatchRole: true,
+      deployOptions: {
+        accessLogDestination: new apigw.LogGroupLogDestination(apiLogGroup),
+        accessLogFormat: apigw.AccessLogFormat.jsonWithStandardFields(),
+        loggingLevel: apigw.MethodLoggingLevel.INFO,
+        dataTraceEnabled: true
+        
+      }
+    });    
 
     const s3SpaOrigin = new origins.S3Origin(sample_spa_bucket);
     const ApiSpaOrigin = new origins.RestApiOrigin(restApi);
@@ -59,12 +81,16 @@ export class CloudfrontApiRevproxySpaStack extends cdk.Stack {
       additionalBehaviors: {
         '/api/*': {
           origin: ApiSpaOrigin,
-          viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+          viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.HTTPS_ONLY,
           cachePolicy: cloudfront.CachePolicy.CACHING_DISABLED,
           originRequestPolicy: cloudfront.OriginRequestPolicy.ALL_VIEWER_EXCEPT_HOST_HEADER
         },
       },
-      defaultRootObject: "index.html"
+      defaultRootObject: "index.html",
+      enableLogging: true,
+      logBucket: accessLogsBucket,
+      logFilePrefix: 'distribution-access-logs/',
+      logIncludesCookies: true
     });
   }
 }

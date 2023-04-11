@@ -2,7 +2,6 @@
 import 'source-map-support/register';
 import * as cdk from 'aws-cdk-lib';
 import { CloudfrontApiRevproxySpaStack } from '../lib/cloudfront-api-revproxy-spa-stack';
-import { Aspects } from 'aws-cdk-lib';
 
 const app = new cdk.App();
 new CloudfrontApiRevproxySpaStack(app, 'CloudfrontApiRevproxySpaStack', {
