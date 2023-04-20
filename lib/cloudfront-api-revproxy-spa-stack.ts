@@ -72,7 +72,8 @@ export class CloudfrontApiRevproxySpaStack extends cdk.Stack {
         dataTraceEnabled: true
         
       }
-    });    
+    });
+        
 
     const s3SpaOrigin = new origins.S3Origin(sample_spa_bucket);
     const ApiSpaOrigin = new origins.RestApiOrigin(restApi);
