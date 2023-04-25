@@ -24,7 +24,8 @@ export class CloudfrontApiRevproxySpaStack extends cdk.Stack {
       autoDeleteObjects: true,
       blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
       encryption: s3.BucketEncryption.S3_MANAGED,
-      enforceSSL: true
+      enforceSSL: true,
+      objectOwnership: s3.ObjectOwnership.BUCKET_OWNER_PREFERRED
     });
 
     const sample_spa_bucket = new s3.Bucket(this, 'sample-spa-bucket', {
@@ -34,8 +35,7 @@ export class CloudfrontApiRevproxySpaStack extends cdk.Stack {
       blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
       encryption: s3.BucketEncryption.S3_MANAGED,
       enforceSSL: true,
-      serverAccessLogsBucket: accessLogsBucket,
-      serverAccessLogsPrefix: 'logs'
+      serverAccessLogsBucket: accessLogsBucket
     });
 
     const inlinecoode = `console.log('Loading function');
@@ -71,6 +71,14 @@ export class CloudfrontApiRevproxySpaStack extends cdk.Stack {
         loggingLevel: apigw.MethodLoggingLevel.INFO,
         dataTraceEnabled: true
         
+      }
+    });
+
+    restApi.addUsagePlan('UsagePlan', {
+      name: 'Easy',
+      throttle: {
+        rateLimit: 10,
+        burstLimit: 2
       }
     });
         
